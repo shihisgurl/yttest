@@ -1,97 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Shakey Siar – YouTube Feed</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ytTestSite – YouTube Video Feed</title>
   <style>
     body {
-      background: #0f0f0f;
-      color: #fff;
-      font-family: 'Segoe UI', sans-serif;
       margin: 0;
-    }
-    header {
-      background: #e63946;
-      padding: 30px;
-      text-align: center;
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
     h1 {
-      margin: 0;
-      font-size: 2.5rem;
+      margin: 20px;
     }
-    .videos {
+    .video-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 20px;
-      padding: 30px;
+      width: 90%;
       max-width: 1200px;
-      margin: auto;
-    }
-    iframe {
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      border: none;
-      border-radius: 10px;
-    }
-    footer {
-      background: #1a1a1a;
-      text-align: center;
       padding: 20px;
-      font-size: 0.9rem;
     }
-    a {
-      color: #ff9090;
-      text-decoration: none;
+    .video {
+      background-color: #222;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .video iframe {
+      width: 100%;
+      height: 170px;
+      border-radius: 6px;
+    }
+    .loading {
+      margin: 40px;
+      font-size: 1.2em;
     }
   </style>
 </head>
 <body>
-
-  <header>
-    <h1>🎬 Shakey Siar</h1>
-    <p>Newest Videos & Shorts (Auto-Updated)</p>
-  </header>
-
-  <div class="videos" id="videos">
-    <p>Loading videos...</p>
-  </div>
-
-  <footer>
-    🔗 Visit the full channel:
-    <a href="https://www.youtube.com/channel/UCkYRS5LQbm_0RjxKD8oHXJw" target="_blank">Shakey Siar on YouTube</a>
-  </footer>
+  <h1>📺 Shakey Siar's Latest Videos</h1>
+  <div class="loading">Loading videos...</div>
+  <div class="video-grid" id="videoGrid"></div>
 
   <script>
-    const API_KEY = "AIzaSyB4o53RhnV7lpGy-rGhAggwwJoZUZ99Of4";
-    const CHANNEL_ID = "UCkYRS5LQbm_0RjxKD8oHXJw";
-    const MAX_RESULTS = 12;
+    const apiKey = "AIzaSyB4o53RhnV7lpGy-rGhAggwwJoZUZ99Of4";
+    const channelId = "UCjGQlNYXvMWdSoODBX7HF_g";
+    const videoGrid = document.getElementById("videoGrid");
+    const loading = document.querySelector(".loading");
 
-    async function loadVideos() {
-      const url = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${CHANNEL_ID}&part=snippet,id&order=date&maxResults=${MAX_RESULTS}`;
+    async function fetchVideos() {
       try {
-        const res = await fetch(url);
+        const res = await fetch(`https://www.googleapis.com/youtube/v3/search?key=${apiKey}&channelId=${channelId}&part=snippet&order=date&maxResults=12&type=video`);
         const data = await res.json();
-        const videoContainer = document.getElementById("videos");
-        videoContainer.innerHTML = "";
 
-        data.items.forEach(item => {
-          if (item.id.kind === "youtube#video") {
+        if (data.items) {
+          loading.style.display = "none";
+          data.items.forEach(item => {
             const videoId = item.id.videoId;
-            const iframe = document.createElement("iframe");
-            iframe.src = `https://www.youtube.com/embed/${videoId}`;
-            iframe.allowFullscreen = true;
-            videoContainer.appendChild(iframe);
-          }
-        });
-      } catch (error) {
-        console.error("Error loading videos:", error);
-        document.getElementById("videos").innerHTML = `<p style="color: red;">Failed to load videos.</p>`;
+            const title = item.snippet.title;
+            const video = document.createElement("div");
+            video.className = "video";
+            video.innerHTML = `
+              <iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>
+              <p>${title}</p>
+            `;
+            videoGrid.appendChild(video);
+          });
+        } else {
+          loading.innerText = "No videos found or quota exceeded.";
+        }
+      } catch (err) {
+        console.error(err);
+        loading.innerText = "Failed to load videos.";
       }
     }
 
-    loadVideos();
+    fetchVideos();
   </script>
-
 </body>
 </html>

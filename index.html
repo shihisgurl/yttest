@@ -1,79 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Shakey Siar – YouTube Video Feed</title>
-  <style>
-    body {
-      background: #0e0e0e;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      margin: 0;
-    }
-    header {
-      background: #e63946;
-      padding: 30px;
-      text-align: center;
-    }
-    h1 {
-      margin: 0;
-      font-size: 2.5rem;
-    }
-    .videos {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
-      padding: 30px;
-    }
-    iframe {
-      border: none;
-      width: 100%;
-      max-width: 400px;
-      height: 225px;
-      border-radius: 10px;
-    }
-    footer {
-      background: #1a1a1a;
-      text-align: center;
-      padding: 20px;
-      font-size: 0.9rem;
-    }
-    a {
-      color: #ff7070;
-      text-decoration: none;
-    }
-  </style>
-</head>
-<body>
+<script>
+  const API_KEY = "AIzaSyB4o53RhnV7lpGy-rGhAggwwJoZUZ99Of4";
+  const CHANNEL_ID = "UCkYRS5LQbm_0RjxKD8oHXJw";
+  const MAX_RESULTS = 12;
 
-  <header>
-    <h1>🎬 Shakey Siar</h1>
-    <p>Latest YouTube Videos & Shorts</p>
-  </header>
+  async function loadVideos() {
+    const url = `https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${CHANNEL_ID}&part=snippet,id&order=date&maxResults=${MAX_RESULTS}`;
 
-  <div class="videos" id="videos">
-    <p>Loading videos...</p>
-  </div>
-
-  <footer>
-    🔗 Visit the full channel: 
-    <a href="https://www.youtube.com/channel/UCkYRS5LQbm_0RjxKD8oHXJw" target="_blank">
-      Shakey Siar on YouTube
-    </a>
-  </footer>
-
-  <script>
-    const API_KEY = "AIzaSyB4o53RhnV7lpGy-rGhAggwwJoZUZ99Of4";
-    const CHANNEL_ID = "UCkYRS5LQbm_0RjxKD8oHXJw";
-    const MAX_RESULTS = 12;
-
-    async function loadVideos() {
-      const res = await fetch(`https://www.googleapis.com/youtube/v3/search?key=${API_KEY}&channelId=${CHANNEL_ID}&part=snippet,id&order=date&maxResults=${MAX_RESULTS}`);
+    try {
+      const res = await fetch(url);
       const data = await res.json();
       const videoContainer = document.getElementById("videos");
-      videoContainer.innerHTML = ""; // clear "Loading..."
+      videoContainer.innerHTML = "";
+
+      if (!data.items || data.items.length === 0) {
+        videoContainer.innerHTML = "<p>No videos found.</p>";
+        return;
+      }
 
       data.items.forEach(item => {
         if (item.id.kind === "youtube#video") {
@@ -84,10 +26,11 @@
           videoContainer.appendChild(iframe);
         }
       });
+    } catch (error) {
+      console.error("Error fetching videos:", error);
+      document.getElementById("videos").innerHTML = `<p style="color: red;">Failed to load videos. See console for details.</p>`;
     }
+  }
 
-    loadVideos();
-  </script>
-
-</body>
-</html>
+  loadVideos();
+</script>
